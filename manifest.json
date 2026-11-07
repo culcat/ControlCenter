@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "aleksandr.control-center",
+  "name": "Control Center",
+  "version": "1.0.0",
+  "author": "aleksandr",
+  "license": "MIT",
+  "description": "macOS-inspired Control Center panel styled with Omarchy's native theme and controls",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "ControlCenter.qml"
+  },
+  "barWidget": {
+    "displayName": "Control Center",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "showMediaAlways": true
+    },
+    "schema": [
+      {
+        "key": "showMediaAlways",
+        "type": "boolean",
+        "label": "Всегда показывать блок медиаплеера",
+        "defaultValue": true
+      }
+    ]
+  }
+}
