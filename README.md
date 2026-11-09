@@ -46,7 +46,7 @@ A macOS-inspired **Control Center** for the [Omarchy](https://omarchy.org) shell
   `omarchy-monitor-state`, `omarchy-network-status`, `omarchy-powerprofiles-list`,
   `omarchy-powerprofiles-set`, `omarchy-screenrecord`, `omarchy-shell`,
   `omarchy-system-lock`, `omarchy-system-stats`.
-  These ship with Omarchy; the plugin does not install anything and does not require `sudo`.
+  These ship with Omarchy; the plugin does not install anything and does not require administrative privileges.
 
 ## Install
 
@@ -58,9 +58,10 @@ omarchy plugin add https://github.com/culcat/ControlCenter.git --enable
 
 ### Manually
 
+Clone `https://github.com/culcat/ControlCenter` into
+`~/.config/omarchy/plugins/io.github.culcat.control-center`, then rescan and enable it:
+
 ```bash
-git clone https://github.com/culcat/ControlCenter.git \
-  ~/.config/omarchy/plugins/io.github.culcat.control-center
 omarchy-shell shell rescanPlugins
 omarchy plugin enable io.github.culcat.control-center
 ```

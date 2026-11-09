@@ -54,9 +54,10 @@ omarchy plugin add https://github.com/culcat/ControlCenter.git --enable
 
 ### Вручную
 
+Склонируйте `https://github.com/culcat/ControlCenter` в
+`~/.config/omarchy/plugins/io.github.culcat.control-center`, затем пересканируйте и включите плагин:
+
 ```bash
-git clone https://github.com/culcat/ControlCenter.git \
-  ~/.config/omarchy/plugins/io.github.culcat.control-center
 omarchy-shell shell rescanPlugins
 omarchy plugin enable io.github.culcat.control-center
 ```
