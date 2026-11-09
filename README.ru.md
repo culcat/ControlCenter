@@ -4,6 +4,8 @@
 
 > ID в маркетплейсе: `io.github.culcat.control-center`
 
+![Превью Control Center](preview.png)
+
 ## Возможности
 
 - **Иконка на верхней панели**:

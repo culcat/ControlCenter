@@ -4,6 +4,8 @@ A macOS-inspired **Control Center** for the [Omarchy](https://omarchy.org) shell
 
 > Marketplace ID: `io.github.culcat.control-center`
 
+![Control Center preview](preview.png)
+
 ## Features
 
 - **Bar button** with a macOS-style two-switch glyph.
