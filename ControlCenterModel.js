@@ -75,12 +75,10 @@ function parseProfiles(raw) {
   }
 }
 
-function profileLabelRu(name) {
+function profileKey(name) {
   var key = String(name || "").toLowerCase()
-  if (key === "power-saver") return "Экономия"
-  if (key === "balanced") return "Баланс"
-  if (key === "performance") return "Максимум"
-  return name ? (name.charAt(0).toUpperCase() + name.slice(1)) : "Баланс"
+  if (key === "power-saver" || key === "balanced" || key === "performance") return key
+  return ""
 }
 
 function profileIcon(name) {
@@ -103,15 +101,16 @@ function isPlaybackStream(node) {
   return node.isSink === true
 }
 
-function friendlyDeviceLabel(node) {
-  if (!node) return "Устройство"
-  var raw = String(node.description || node.nickname || node.name || "Устройство").trim()
+function friendlyDeviceLabel(node, fallback) {
+  var fb = String(fallback || "Device")
+  if (!node) return fb
+  var raw = String(node.description || node.nickname || node.name || fb).trim()
   raw = raw
     .replace(/\s+Analog Stereo$/i, "")
     .replace(/\s+Digital Stereo\s*\([^)]*\)$/i, "")
     .replace(/\s+Multichannel$/i, "")
     .replace(/^Built-in Audio\s+/i, "")
-  return raw || "Устройство"
+  return raw || fb
 }
 
 function isHeadphones(node) {
@@ -136,16 +135,17 @@ function sourceGlyph(node) {
   return "󰍬"
 }
 
-function btDeviceLabel(dev) {
-  if (!dev) return "Bluetooth-устройство"
+function btDeviceLabel(dev, fallback) {
+  var fb = String(fallback || "Bluetooth device")
+  if (!dev) return fb
   var name = String(dev.name || dev.deviceName || dev.alias || dev.address || "").trim()
-  return name || "Bluetooth-устройство"
+  return name || fb
 }
 
-function btDeviceGlyph(dev) {
+function btDeviceGlyph(dev, fallback) {
   if (!dev) return "󰂯"
   var icon = String(dev.icon || "").toLowerCase()
-  var name = btDeviceLabel(dev).toLowerCase()
+  var name = btDeviceLabel(dev, fallback).toLowerCase()
   if (icon.indexOf("audio") !== -1 || icon.indexOf("head") !== -1 || name.indexOf("airpods") !== -1 || name.indexOf("buds") !== -1 || name.indexOf("wh-") !== -1 || name.indexOf("wf-") !== -1) return "󰋋"
   if (icon.indexOf("mouse") !== -1 || name.indexOf("mouse") !== -1 || name.indexOf("mx master") !== -1) return "󰍽"
   if (icon.indexOf("keyboard") !== -1 || name.indexOf("keyboard") !== -1 || name.indexOf("keychron") !== -1 || name.indexOf("mx keys") !== -1) return "󰌌"
@@ -158,7 +158,7 @@ function isAddressLike(s) {
   return /^([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}$/.test(String(s || "").trim())
 }
 
-function bluetoothDeviceLists(devices) {
+function bluetoothDeviceLists(devices, fallback) {
   var connected = []
   var paired = []
   var discovered = []
@@ -166,11 +166,11 @@ function bluetoothDeviceLists(devices) {
   for (var i = 0; i < list.length; i++) {
     var d = list[i]
     if (!d || !d.address) continue
-    var label = btDeviceLabel(d)
+    var label = btDeviceLabel(d, fallback)
     var row = {
       address: String(d.address),
       name: label,
-      glyph: btDeviceGlyph(d),
+      glyph: btDeviceGlyph(d, fallback),
       connected: !!d.connected,
       paired: !!(d.paired || d.bonded || d.trusted),
       batteryAvailable: !!(d.batteryAvailable && d.battery !== undefined && d.battery >= 0),

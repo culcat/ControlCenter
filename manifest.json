@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "aleksandr.control-center",
+  "id": "io.github.culcat.control-center",
   "name": "Control Center",
-  "version": "1.0.0",
-  "author": "aleksandr",
+  "version": "1.1.0",
+  "author": "culcat",
   "license": "MIT",
-  "description": "macOS-inspired Control Center panel styled with Omarchy's native theme and controls",
+  "description": "macOS-inspired Control Center panel with Wi-Fi, Bluetooth, VPN, sound, display, power and media controls, styled with Omarchy's native theme.",
   "kinds": [
     "bar-widget"
   ],
@@ -14,18 +14,28 @@
   },
   "barWidget": {
     "displayName": "Control Center",
+    "description": "A macOS-style Bento control panel for network, Bluetooth, audio, display and power.",
     "category": "System",
     "allowMultiple": false,
     "defaultSection": "right",
     "defaults": {
-      "showMediaAlways": true
+      "showMediaAlways": true,
+      "language": "auto"
     },
     "schema": [
       {
         "key": "showMediaAlways",
         "type": "boolean",
-        "label": "Всегда показывать блок медиаплеера",
+        "label": "Always show the media player card",
+        "description": "Keep the Now Playing card visible even when no MPRIS player is active.",
         "defaultValue": true
+      },
+      {
+        "key": "language",
+        "type": "string",
+        "label": "Language",
+        "description": "Interface language: auto, en, ru, uk, de, es, fr or zh. \"auto\" follows the system locale.",
+        "defaultValue": "auto"
       }
     ]
   }

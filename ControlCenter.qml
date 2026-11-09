@@ -12,12 +12,38 @@ import qs.Ui
 import qs.Commons
 import qs.Commons as Commons
 import "ControlCenterModel.js" as Model
+import "i18n.js" as I18n
 
 Panel {
   id: root
-  moduleName: "aleksandr.control-center"
-  ipcTarget: "aleksandr.control-center"
+  moduleName: "io.github.culcat.control-center"
+  ipcTarget: "io.github.culcat.control-center"
   manageIpc: false
+
+  // --- Localization ---
+  // `language` is an inline bar-widget setting (auto | en | ru | uk | de | es | fr | zh).
+  readonly property string systemLocale: {
+    var candidates = [Quickshell.env("LC_ALL"), Quickshell.env("LC_MESSAGES"), Quickshell.env("LANG")]
+    for (var i = 0; i < candidates.length; i++) {
+      if (candidates[i] && String(candidates[i]).trim() !== "") return String(candidates[i])
+    }
+    return String(Qt.locale().name || "")
+  }
+  readonly property string language: I18n.resolveLanguage(setting("language", "auto"), systemLocale)
+
+  // Reading `language` here keeps every translated binding reactive when the
+  // user changes the language setting or the system locale.
+  function tr(key, a, b, c, d) {
+    var current = language
+    return I18n.tr(current, key, a, b, c, d)
+  }
+
+  function powerLabel(name) {
+    var key = Model.profileKey(name)
+    if (key === "power-saver" || key === "balanced" || key === "performance") return tr("power." + key)
+    var raw = String(name || "")
+    return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : tr("power.balanced")
+  }
 
   // --- Theme & Typography tokens ---
   readonly property color fg: bar ? bar.foreground : Commons.Color.popups.text
@@ -103,7 +129,7 @@ Panel {
   readonly property bool outputMuted: volumeSink && volumeSink.audio ? volumeSink.audio.muted : false
   readonly property real inputVolume: source && source.audio ? source.audio.volume : 0
   readonly property bool inputMuted: source && source.audio ? source.audio.muted : false
-  readonly property string activeSinkLabel: Model.friendlyDeviceLabel(volumeSink || sink)
+  readonly property string activeSinkLabel: Model.friendlyDeviceLabel(volumeSink || sink, tr("sound.device"))
 
   onSinkChanged: resolveVolumeSink()
 
@@ -193,18 +219,18 @@ Panel {
     return iface.indexOf("amn") === 0 || iface.indexOf("tun") === 0 || iface.indexOf("wg") === 0 || iface.indexOf("tailscale") === 0
   }
   readonly property string wifiSubtitle: {
-    if (!wifiEnabled) return "Выкл."
+    if (!wifiEnabled) return tr("common.off")
     if (connectedWifiSsid) return connectedWifiSsid
-    return "Вкл."
+    return tr("common.on")
   }
   readonly property string vpnSubtitle: {
     var ip = String(netInfo.ip || "")
     var ping = Number(netInfo.internet_ping_ms || -1)
     if (vpnActive) {
-      return (ip || "Активен") + (ping > 0 ? " · " + Math.round(ping) + " мс" : "")
+      return (ip || tr("net.active")) + (ping > 0 ? " · " + tr("common.ms", Math.round(ping)) : "")
     }
-    if (ip) return ip + (ping > 0 ? " · " + Math.round(ping) + " мс" : "")
-    return connectedWifiSsid ? "Подключено" : "Нет сети"
+    if (ip) return ip + (ping > 0 ? " · " + tr("common.ms", Math.round(ping)) : "")
+    return connectedWifiSsid ? tr("common.connected") : tr("net.noNetwork")
   }
 
   function toggleWifi() {
@@ -251,18 +277,18 @@ Panel {
   readonly property bool btEnabled: btAdapter ? !!btAdapter.enabled : false
   readonly property bool btDiscovering: btAdapter ? !!btAdapter.discovering : false
   readonly property var btDevicesRaw: Bluetooth.devices ? Bluetooth.devices.values : []
-  readonly property var btGroups: Model.bluetoothDeviceLists(btDevicesRaw)
+  readonly property var btGroups: Model.bluetoothDeviceLists(btDevicesRaw, tr("bt.device"))
   readonly property var btConnected: btGroups.connected || []
   readonly property var btPaired: btGroups.paired || []
   readonly property var btDiscovered: btGroups.discovered || []
   property var btPending: ({})
 
   readonly property string btSubtitle: {
-    if (!btAdapter) return "Нет адаптера"
-    if (!btEnabled) return "Выкл."
+    if (!btAdapter) return tr("bt.noAdapter")
+    if (!btEnabled) return tr("common.off")
     if (btConnected.length === 1) return btConnected[0].name
-    if (btConnected.length > 1) return btConnected.length + " устр."
-    return "Вкл."
+    if (btConnected.length > 1) return tr("bt.deviceCount", btConnected.length)
+    return tr("common.on")
   }
 
   function toggleBluetooth() {
@@ -279,7 +305,7 @@ Panel {
     if (!row || !row.address) return
     var action = row.connected ? "disconnect" : (row.paired ? "connect" : "pair")
     var copy = Object.assign({}, btPending)
-    copy[row.address] = row.connected ? "Отключение…" : "Подключение…"
+    copy[row.address] = row.connected ? tr("bt.disconnecting") : tr("bt.connecting")
     btPending = copy
     btPendingClearTimer.restart()
     Quickshell.execDetached(["omarchy-bluetooth-device", action, row.address])
@@ -421,13 +447,13 @@ Panel {
     return mprisPlayers[idx]
   }
   readonly property bool hasMedia: activePlayer !== null
-  readonly property string mediaTitle: activePlayer && activePlayer.trackTitle ? String(activePlayer.trackTitle) : "Не воспроизводится"
+  readonly property string mediaTitle: activePlayer && activePlayer.trackTitle ? String(activePlayer.trackTitle) : tr("media.nothingPlaying")
   readonly property string mediaArtist: {
-    if (!activePlayer) return "Медиаплеер"
+    if (!activePlayer) return tr("media.player")
     var artist = String(activePlayer.trackArtist || "").trim()
     var app = String(activePlayer.identity || activePlayer.desktopEntry || "").trim()
     if (artist && app) return artist + " · " + app
-    return artist || app || "Медиа"
+    return artist || app || tr("media.label")
   }
   readonly property string mediaArtUrl: activePlayer && activePlayer.trackArtUrl ? String(activePlayer.trackArtUrl) : ""
   readonly property bool mediaPlaying: !!(activePlayer && activePlayer.isPlaying)
@@ -604,7 +630,7 @@ Panel {
 
   // --- IPC Handler ---
   IpcHandler {
-    target: "aleksandr.control-center"
+    target: "io.github.culcat.control-center"
 
     function open() { root.open() }
     function close() { root.close() }
@@ -626,7 +652,7 @@ Panel {
     anchors.fill: parent
     bar: root.bar
     active: root.opened
-    tooltipText: "Пункт управления · Звук " + (root.outputMuted ? "Выкл." : Math.round(root.outputVolume * 100) + "%")
+    tooltipText: root.tr("cc.tooltip", root.outputMuted ? root.tr("common.off") : Math.round(root.outputVolume * 100) + "%")
       + (root.connectedWifiSsid ? " · " + root.connectedWifiSsid : "")
 
     iconComponent: Component {
@@ -793,7 +819,7 @@ Panel {
                   width: parent.width
                   height: parent.rowH
                   iconText: root.vpnActive ? "󰖂" : "󰈀"
-                  title: root.vpnActive ? ("VPN · " + String(root.netInfo.iface || "tun")) : "Сеть"
+                  title: root.vpnActive ? ("VPN · " + String(root.netInfo.iface || "tun")) : root.tr("net.network")
                   subtitle: root.vpnSubtitle
                   active: root.vpnActive || !!root.netInfo.ip
                   hasChevron: true
@@ -845,7 +871,7 @@ Panel {
 
                     Text {
                       width: parent.width
-                      text: "Не беспокоить"
+                      text: root.tr("dnd.title")
                       color: root.fg
                       font.family: root.uiFontFamily
                       font.pixelSize: Style.font.bodySmall
@@ -855,7 +881,7 @@ Panel {
 
                     Text {
                       width: parent.width
-                      text: root.dndEnabled ? "Включено" : "Выкл."
+                      text: root.dndEnabled ? root.tr("dnd.enabled") : root.tr("common.off")
                       color: root.dndEnabled ? root.accent : root.dimFg
                       font.family: root.uiFontFamily
                       font.pixelSize: Style.font.caption
@@ -896,7 +922,7 @@ Panel {
                     Text {
                       width: parent.width
                       horizontalAlignment: Text.AlignHCenter
-                      text: "Ночной свет"
+                      text: root.tr("nightlight.title")
                       color: root.fg
                       font.family: root.uiFontFamily
                       font.pixelSize: Style.font.caption
@@ -930,7 +956,7 @@ Panel {
                     Text {
                       width: parent.width
                       horizontalAlignment: Text.AlignHCenter
-                      text: "Не спать"
+                      text: root.tr("stayAwake.title")
                       color: root.fg
                       font.family: root.uiFontFamily
                       font.pixelSize: Style.font.caption
@@ -961,7 +987,7 @@ Panel {
                 Text {
                   anchors.left: parent.left
                   anchors.verticalCenter: parent.verticalCenter
-                  text: "ПИТАНИЕ И РЕЖИМ"
+                  text: root.tr("power.header")
                   color: root.dimFg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.caption
@@ -1019,7 +1045,7 @@ Panel {
 
                       Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: Model.profileLabelRu(modelData)
+                        text: root.powerLabel(modelData)
                         color: isCurrent ? root.badgeOnText : root.fg
                         font.family: root.uiFontFamily
                         font.pixelSize: Style.font.caption
@@ -1058,7 +1084,7 @@ Panel {
                 Text {
                   anchors.left: parent.left
                   anchors.verticalCenter: parent.verticalCenter
-                  text: "ЭКРАН"
+                  text: root.tr("display.header")
                   color: root.dimFg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.caption
@@ -1126,7 +1152,7 @@ Panel {
                 Text {
                   anchors.left: parent.left
                   anchors.verticalCenter: parent.verticalCenter
-                  text: "ЗВУК"
+                  text: root.tr("sound.header")
                   color: root.dimFg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.caption
@@ -1139,7 +1165,7 @@ Panel {
                   anchors.verticalCenter: parent.verticalCenter
                   maxWidth: parent.width * 0.72
                   text: root.activeSinkLabel + " · "
-                    + (root.outputMuted ? "Выкл." : Math.round((volumeSlider.dragging ? volumeSlider.liveValue : root.outputVolume) * 100) + "%")
+                    + (root.outputMuted ? root.tr("common.off") : Math.round((volumeSlider.dragging ? volumeSlider.liveValue : root.outputVolume) * 100) + "%")
                     + " ›"
                   onClicked: root.currentPage = "audio"
                 }
@@ -1295,7 +1321,7 @@ Panel {
             QuickActionPill {
               width: footerActionsRow.actionW
               iconText: "󰄀"
-              label: "Скриншот"
+              label: root.tr("action.screenshot")
               onClicked: {
                 root.close()
                 Quickshell.execDetached(["bash", "-lc", "sleep 0.18 && omarchy-capture-screenshot"])
@@ -1305,7 +1331,7 @@ Panel {
             QuickActionPill {
               width: footerActionsRow.actionW
               iconText: "󰕧"
-              label: "Запись"
+              label: root.tr("action.record")
               onClicked: {
                 root.close()
                 Quickshell.execDetached(["bash", "-lc", "sleep 0.18 && omarchy-screenrecord"])
@@ -1315,7 +1341,7 @@ Panel {
             QuickActionPill {
               width: footerActionsRow.actionW
               iconText: "󰸌"
-              label: "Стиль"
+              label: root.tr("action.style")
               onClicked: {
                 root.close()
                 Quickshell.execDetached(["omarchy-menu", "toggle", "style"])
@@ -1325,7 +1351,7 @@ Panel {
             QuickActionPill {
               width: footerActionsRow.actionW
               iconText: "󰌾"
-              label: "Блок."
+              label: root.tr("action.lock")
               onClicked: {
                 root.close()
                 Quickshell.execDetached(["omarchy-system-lock"])
@@ -1374,7 +1400,7 @@ Panel {
 
                 Text {
                   anchors.verticalCenter: parent.verticalCenter
-                  text: "Назад"
+                  text: root.tr("common.back")
                   color: root.fg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.bodySmall
@@ -1393,9 +1419,9 @@ Panel {
 
             Text {
               anchors.centerIn: parent
-              text: root.currentPage === "wifi" ? "Wi-Fi и Сеть" :
-                    (root.currentPage === "bluetooth" ? "Bluetooth" :
-                    (root.currentPage === "audio" ? "Звук и Микрофон" : "Экран и Текст"))
+              text: root.currentPage === "wifi" ? root.tr("net.wifiNetwork") :
+                    (root.currentPage === "bluetooth" ? root.tr("bt.title") :
+                    (root.currentPage === "audio" ? root.tr("sound.title") : root.tr("display.title")))
               color: root.fg
               font.family: root.uiFontFamily
               font.pixelSize: Style.font.subtitle
@@ -1437,7 +1463,7 @@ Panel {
                 spacing: Style.space(4)
 
                 Text {
-                  text: "АКТИВНОЕ ПОДКЛЮЧЕНИЕ"
+                  text: root.tr("net.activeConnection")
                   color: root.dimFg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.caption
@@ -1447,7 +1473,7 @@ Panel {
 
                 Text {
                   width: parent.width
-                  text: (root.connectedWifiSsid ? "Wi-Fi: " + root.connectedWifiSsid : "Проводная / Туннель")
+                  text: (root.connectedWifiSsid ? "Wi-Fi: " + root.connectedWifiSsid : root.tr("net.wiredTunnel"))
                     + (root.vpnActive ? "  ·  VPN: " + root.netInfo.iface : "")
                   color: root.fg
                   font.family: root.uiFontFamily
@@ -1459,7 +1485,7 @@ Panel {
                 Text {
                   width: parent.width
                   text: "IP: " + (root.netInfo.ip || "—")
-                    + (root.netInfo.internet_ping_ms ? "  ·  Пинг: " + Math.round(Number(root.netInfo.internet_ping_ms)) + " мс" : "")
+                    + (root.netInfo.internet_ping_ms ? "  ·  " + root.tr("net.ping") + ": " + root.tr("common.ms", Math.round(Number(root.netInfo.internet_ping_ms))) : "")
                     + "  ·  DNS: " + root.dnsProvider
                   color: root.dimFg
                   font.family: root.fontFamily
@@ -1510,7 +1536,7 @@ Panel {
             }
 
             Text {
-              text: "ДОСТУПНЫЕ СЕТИ WI-FI (" + root.wifiRows.length + ")"
+              text: root.tr("net.availableNetworks", root.wifiRows.length)
               color: root.dimFg
               font.family: root.uiFontFamily
               font.pixelSize: Style.font.caption
@@ -1578,7 +1604,7 @@ Panel {
                           id: wActionLabel
                           anchors.right: parent.right
                           anchors.verticalCenter: parent.verticalCenter
-                          text: modelData.connected ? "Подключено" : (modelData.percent + "%")
+                          text: modelData.connected ? root.tr("common.connected") : (modelData.percent + "%")
                           color: modelData.connected ? root.accent : root.dimFg
                           font.family: root.uiFontFamily
                           font.pixelSize: Style.font.caption
@@ -1630,7 +1656,7 @@ Panel {
 
                           Text {
                             anchors.centerIn: parent
-                            text: "Вход"
+                            text: root.tr("net.join")
                             color: root.badgeOnText
                             font.family: root.uiFontFamily
                             font.pixelSize: Style.font.caption
@@ -1667,8 +1693,8 @@ Panel {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.btEnabled
-                  ? ("УСТРОЙСТВА (" + (root.btConnected.length + root.btPaired.length + root.btDiscovered.length) + ")")
-                  : "BLUETOOTH ВЫКЛЮЧЕН"
+                  ? root.tr("bt.devices", root.btConnected.length + root.btPaired.length + root.btDiscovered.length)
+                  : root.tr("bt.off")
                 color: root.dimFg
                 font.family: root.uiFontFamily
                 font.pixelSize: Style.font.caption
@@ -1680,7 +1706,7 @@ Panel {
                 visible: root.btEnabled
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                text: root.btDiscovering ? "󰂰 Поиск…" : "󰂯 Поиск устройств"
+                text: root.btDiscovering ? "󰂰 " + root.tr("bt.searching") : "󰂯 " + root.tr("bt.search")
                 onClicked: root.toggleBtScan()
               }
             }
@@ -1744,8 +1770,8 @@ Panel {
                         text: root.btPending[modelData.address]
                           ? root.btPending[modelData.address]
                           : (modelData.connected
-                            ? ("Подключено" + (modelData.batteryAvailable ? " · " + modelData.batteryPercent + "%" : ""))
-                            : (modelData.paired ? "Сопряжено" : "Подключить"))
+                            ? (root.tr("common.connected") + (modelData.batteryAvailable ? " · " + modelData.batteryPercent + "%" : ""))
+                            : (modelData.paired ? root.tr("bt.paired") : root.tr("bt.connect")))
                         color: modelData.connected ? root.accent : root.dimFg
                         font.family: root.uiFontFamily
                         font.pixelSize: Style.font.caption
@@ -1777,7 +1803,7 @@ Panel {
               spacing: Style.space(10)
 
               Text {
-                text: "УСТРОЙСТВА ВЫВОДА"
+                text: root.tr("sound.outputs")
                 color: root.dimFg
                 font.family: root.uiFontFamily
                 font.pixelSize: Style.font.caption
@@ -1816,7 +1842,7 @@ Panel {
                       anchors.right: sinkCheck.left
                       anchors.rightMargin: Style.space(8)
                       anchors.verticalCenter: parent.verticalCenter
-                      text: Model.friendlyDeviceLabel(modelData)
+                      text: Model.friendlyDeviceLabel(modelData, root.tr("sound.device"))
                       color: root.fg
                       font.family: root.uiFontFamily
                       font.pixelSize: Style.font.bodySmall
@@ -1840,7 +1866,7 @@ Panel {
               // Input / Microphone Section
               Text {
                 visible: root.candidateSources.length > 0 || !!root.source
-                text: "МИКРОФОН (" + (root.inputMuted ? "Выкл." : Math.round(root.inputVolume * 100) + "%") + ")"
+                text: root.tr("sound.mic", root.inputMuted ? root.tr("common.off") : Math.round(root.inputVolume * 100) + "%")
                 color: root.dimFg
                 font.family: root.uiFontFamily
                 font.pixelSize: Style.font.caption
@@ -1911,7 +1937,7 @@ Panel {
                       anchors.leftMargin: Style.space(10)
                       anchors.right: parent.right
                       anchors.verticalCenter: parent.verticalCenter
-                      text: Model.friendlyDeviceLabel(modelData)
+                      text: Model.friendlyDeviceLabel(modelData, root.tr("sound.device"))
                       color: root.fg
                       font.family: root.uiFontFamily
                       font.pixelSize: Style.font.bodySmall
@@ -1925,7 +1951,7 @@ Panel {
               // Per-App Streams Section
               Text {
                 visible: root.candidateStreams.length > 0
-                text: "ПРИЛОЖЕНИЯ"
+                text: root.tr("sound.apps")
                 color: root.dimFg
                 font.family: root.uiFontFamily
                 font.pixelSize: Style.font.caption
@@ -1953,7 +1979,7 @@ Panel {
                       Text {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: Model.friendlyDeviceLabel(modelData)
+                        text: Model.friendlyDeviceLabel(modelData, root.tr("sound.device"))
                         color: root.fg
                         font.family: root.uiFontFamily
                         font.pixelSize: Style.font.caption
@@ -2007,7 +2033,7 @@ Panel {
                 spacing: Style.space(8)
 
                 Text {
-                  text: "МАСШТАБ МОНИТОРА (" + (root.focusedMonitor || "Экран") + ")"
+                  text: root.tr("display.scale", root.focusedMonitor || root.tr("display.screen"))
                   color: root.dimFg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.caption
@@ -2066,7 +2092,7 @@ Panel {
                 spacing: Style.space(8)
 
                 Text {
-                  text: "РАЗМЕР ШРИФТА ИНТЕРФЕЙСА (" + Style.font.baseSize + " px)"
+                  text: root.tr("display.font", Style.font.baseSize)
                   color: root.dimFg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.caption

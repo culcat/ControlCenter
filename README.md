@@ -1,74 +1,121 @@
-# Control Center (`aleksandr.control-center`)
+# Control Center
 
-Плагин **Control Center** для оболочки [Omarchy](https://omarchy.org) (`omarchy-shell` / Quickshell) в духе macOS Control Center (Bento-сетка) с полным сохранением системной палитры, типографики и скруглений активной темы Omarchy.
+A macOS-inspired **Control Center** for the [Omarchy](https://omarchy.org) shell (`omarchy-shell` / Quickshell). It opens as a Bento-style popup from the bar and keeps Omarchy's native palette, typography and corner radii.
 
-## Возможности
+> Marketplace ID: `io.github.culcat.control-center`
 
-- **Иконка на верхней панели (Top Bar)**:
-  - Векторная иконка двух переключателей в стиле macOS Control Center.
-  - **ЛКМ** — открыть/закрыть Control Center.
-  - **ПКМ** — быстрое выключение/включение звука (Mute).
-  - **Колёсико мыши** — регулировка громкости с вызовом системного OSD.
-- **Связь и сеть (Bento-карточка 2×2 слева)**:
-  - **Wi-Fi**: быстрое включение/выключение по клику на иконку + встроенная страница выбора сети, ввода пароля и переключения DNS (`DHCP`, `Cloudflare`, `Google`).
-  - **Bluetooth**: включение/выключение адаптера + встроенный список подключённых, сопряжённых и доступных устройств с поиском и индикацией заряда.
-  - **VPN и Сеть**: отображение активного туннеля (`amn0`, `tun*`, `wg*`, `tailscale*`), локального IP и пинга.
-- **Быстрые переключатели (Bento-карточки справа)**:
-  - **Не беспокоить (DND)** — синхронизация с сервисом уведомлений Omarchy.
-  - **Ночной свет (Night Light)** — управление цветовой температурой экрана (`hyprsunset`).
-  - **Не спать (Stay Awake)** — блокировка автоперехода в скринсейвер и локскрин (`omarchy.idle`).
-- **Питание и телеметрия**:
-  - Сегментированный переключатель профилей питания (`Экономия`, `Баланс`, `Максимум`).
-  - Живой мониторинг загрузки `CPU`, `RAM` и заряда батареи (`UPower`).
-- **Экран и Звук (со встроенными подстраницами)**:
-  - Слайдер яркости экрана + подстраница выбора масштаба монитора (`1x`, `1.25x`, `1.6x`, `2x`) и размера шрифта интерфейса (`10–20 px`).
-  - Слайдер громкости + подстраница выбора устройства вывода, настройки микрофона и микшера громкости отдельных приложений (PipeWire).
-- **Медиаплеер (Now Playing)**:
-  - Управление активными MPRIS-плеерами (обложка трека, название, исполнитель, переключение между плеерами, `Prev` / `Play-Pause` / `Next`).
-- **Нижняя панель быстрых действий**:
-  - **Скриншот** (`omarchy-capture-screenshot`), **Запись экрана** (`omarchy-screenrecord`), **Стиль/Тема** (`omarchy-menu toggle style`), **Блокировка** (`omarchy-system-lock`).
+## Features
 
-## Установка
+- **Bar button** with a macOS-style two-switch glyph.
+  - **Left click** — open or close the Control Center.
+  - **Right click** — mute/unmute the output.
+  - **Mouse wheel** — adjust volume and show the system OSD.
+- **Connectivity card (2×2 Bento, left)**
+  - **Wi-Fi** — toggle the radio, pick a network, enter a password and switch DNS providers (`DHCP`, `Cloudflare`, `Google`).
+  - **Bluetooth** — toggle the adapter and manage connected, paired and discovered devices, with search and battery level.
+  - **VPN & network** — shows the active tunnel (`amn0`, `tun*`, `wg*`, `tailscale*`), local IP and ping.
+- **Quick toggles (Bento tiles, right)**
+  - **Do Not Disturb** — synced with the Omarchy notification service.
+  - **Night Light** — controls `hyprsunset` colour temperature.
+  - **Stay Awake** — overrides the Omarchy idle screensaver and lock.
+- **Power & telemetry**
+  - Segmented power-profile switch (Power Saver, Balanced, Performance).
+  - Live CPU, RAM and battery telemetry (UPower).
+- **Display & Sound** (with drill-down pages)
+  - Brightness slider, monitor scale presets (`1x`, `1.25x`, `1.6x`, `2x`) and interface font size (`10–20 px`).
+  - Volume slider, output-device picker, microphone controls and a per-application PipeWire mixer.
+- **Now Playing**
+  - MPRIS album art, title and artist, player switching and Prev / Play-Pause / Next.
+- **Quick actions footer**
+  - Screenshot, screen recording, Style/Theme menu and lock screen.
+- **Localization**
+  - English, Russian, Ukrainian, German, Spanish, French and Simplified Chinese, with automatic system-locale detection and a manual override.
 
-### Через менеджер плагинов Omarchy
+## Requirements
+
+- **Omarchy Quattro** with `omarchy-shell` 4.x or newer (developed against 4.0.6).
+- **Hyprland**, **PipeWire**, **NetworkManager**, **BlueZ**, **UPower** and **MPRIS** support.
+- Optional hardware/services used when present: `hyprsunset` (Night Light) and a Bluetooth adapter.
+- Omarchy helper commands on `PATH`:
+  `omarchy-audio-output-set-default`, `omarchy-audio-input-set-default`,
+  `omarchy-audio-output-sink`, `omarchy-bluetooth-device`,
+  `omarchy-brightness-display`, `omarchy-capture-screenshot`, `omarchy-display-text-size`,
+  `omarchy-dns`, `omarchy-hyprland-monitor-scaling`, `omarchy-menu`,
+  `omarchy-monitor-state`, `omarchy-network-status`, `omarchy-powerprofiles-list`,
+  `omarchy-powerprofiles-set`, `omarchy-screenrecord`, `omarchy-shell`,
+  `omarchy-system-lock`, `omarchy-system-stats`.
+  These ship with Omarchy; the plugin does not install anything and does not require `sudo`.
+
+## Install
+
+### With the Omarchy plugin manager
 
 ```bash
 omarchy plugin add https://github.com/culcat/ControlCenter.git --enable
 ```
 
-### Вручную
-
-Склонируйте репозиторий в `~/.config/omarchy/plugins/aleksandr.control-center`:
+### Manually
 
 ```bash
-git clone git@github.com:culcat/ControlCenter.git ~/.config/omarchy/plugins/aleksandr.control-center
+git clone https://github.com/culcat/ControlCenter.git \
+  ~/.config/omarchy/plugins/io.github.culcat.control-center
 omarchy-shell shell rescanPlugins
-omarchy plugin enable aleksandr.control-center
+omarchy plugin enable io.github.culcat.control-center
 ```
 
-## Управление через IPC / Хоткеи
-
-Вы можете привязать открытие Control Center или отдельных его разделов в `~/.config/hypr/bindings.lua`:
+The widget appears in the right bar section. Move it with:
 
 ```bash
-# Открыть / закрыть Control Center
-omarchy-shell shell toggle aleksandr.control-center
-
-# Открыть сразу нужный раздел (main | wifi | bluetooth | audio | display)
-omarchy-shell aleksandr.control-center openPage audio
+omarchy bar move io.github.culcat.control-center --section right
 ```
 
-## Настройки (`~/.config/omarchy/shell.json`)
+## Usage
 
-В секции `bar.layout.right` поддерживаются inline-параметры:
+Click the bar button to open the panel. Use the cards to drill into Wi-Fi, Bluetooth, Sound and Display pages; press **Escape** or the **Back** button to return to the main view and close the panel.
+
+IPC targets are also available for hotkeys in `~/.config/hypr/bindings.lua`:
+
+```bash
+# Open / close the Control Center
+omarchy-shell shell toggle io.github.culcat.control-center
+
+# Open a specific page (main | wifi | bluetooth | audio | display)
+omarchy-shell io.github.culcat.control-center openPage audio
+```
+
+## Configure
+
+Settings are inline fields on the widget entry in `~/.config/omarchy/shell.json`:
 
 ```json
 {
-  "id": "aleksandr.control-center",
-  "showMediaAlways": true
+  "id": "io.github.culcat.control-center",
+  "showMediaAlways": true,
+  "language": "auto"
 }
 ```
 
-## Лицензия
+| Setting | Default | Description |
+| --- | --- | --- |
+| `showMediaAlways` | `true` | Keep the Now Playing card visible when no player is active. |
+| `language` | `"auto"` | UI language: `auto`, `en`, `ru`, `uk`, `de`, `es`, `fr`, `zh`. |
 
-MIT
+`auto` follows `LC_ALL`, `LC_MESSAGES`, `LANG` and the Qt locale, in that order, and falls back to English.
+
+### Localization
+
+Translations live in [`i18n.js`](i18n.js). To add a language, copy the `en` dictionary under a new lowercase locale key, translate the values, and use the same key in the `language` setting. Placeholders such as `{0}` must stay intact.
+
+## Remove
+
+```bash
+omarchy plugin remove io.github.culcat.control-center
+```
+
+or delete `~/.config/omarchy/plugins/io.github.culcat.control-center` and run `omarchy-shell shell rescanPlugins`.
+
+## License
+
+[MIT](LICENSE) © 2026 Aleksandr (culcat)
+
+Русская документация: [README.ru.md](README.ru.md)
