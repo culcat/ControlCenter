@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.culcat.control-center",
   "name": "Control Center",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "culcat",
   "license": "MIT",
   "description": "macOS-inspired Control Center panel with Wi-Fi, Bluetooth, VPN, sound, display, power and media controls, styled with Omarchy's native theme.",

@@ -260,11 +260,19 @@ Panel {
     else Quickshell.execDetached(["nmcli", "device", "wifi", "connect", row.ssid])
   }
 
-  function submitWifiPassword(ssid, password) {
-    if (!ssid || !password) return
+  function submitWifiPassword(row, password) {
+    if (!row || !row.ssid || !password) return
     wifiPasswordSsid = ""
     wifiPasswordText = ""
-    Quickshell.execDetached(["nmcli", "device", "wifi", "connect", ssid, "password", password])
+    // Pass the PSK through the NetworkManager D-Bus API. Never put secrets in
+    // nmcli argv: other local accounts can read /proc/<pid>/cmdline.
+    if (row.netObj && typeof row.netObj.connectWithPsk === "function") {
+      row.netObj.connectWithPsk(password)
+      return
+    }
+    // Older backends: fall back to the normal connect path. NetworkManager's
+    // agent will prompt if credentials are still required.
+    if (row.netObj && typeof row.netObj.connect === "function") row.netObj.connect()
   }
 
   function setDnsProvider(provider) {
@@ -1643,7 +1651,7 @@ Panel {
                             font.family: root.fontFamily
                             font.pixelSize: Style.font.bodySmall
                             clip: true
-                            onAccepted: root.submitWifiPassword(modelData.ssid, text)
+                            onAccepted: root.submitWifiPassword(modelData, text)
                           }
                         }
 
@@ -1666,7 +1674,7 @@ Panel {
                           MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.submitWifiPassword(modelData.ssid, passField.text)
+                            onClicked: root.submitWifiPassword(modelData, passField.text)
                           }
                         }
                       }
