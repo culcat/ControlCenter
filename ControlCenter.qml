@@ -1266,6 +1266,7 @@ Panel {
                 Text {
                   width: parent.width
                   text: root.mediaTitle
+                  textFormat: Text.PlainText
                   color: root.hasMedia ? root.fg : root.dimFg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.bodySmall
@@ -1276,6 +1277,7 @@ Panel {
                 Text {
                   width: parent.width
                   text: root.mediaArtist + (root.mprisPlayers.length > 1 ? " (" + (root.selectedPlayerIndex + 1) + "/" + root.mprisPlayers.length + ")" : "")
+                  textFormat: Text.PlainText
                   color: root.dimFg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.caption
@@ -1483,6 +1485,7 @@ Panel {
                   width: parent.width
                   text: (root.connectedWifiSsid ? "Wi-Fi: " + root.connectedWifiSsid : root.tr("net.wiredTunnel"))
                     + (root.vpnActive ? "  ·  VPN: " + root.netInfo.iface : "")
+                  textFormat: Text.PlainText
                   color: root.fg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.bodySmall
@@ -1495,6 +1498,7 @@ Panel {
                   text: "IP: " + (root.netInfo.ip || "—")
                     + (root.netInfo.internet_ping_ms ? "  ·  " + root.tr("net.ping") + ": " + root.tr("common.ms", Math.round(Number(root.netInfo.internet_ping_ms))) : "")
                     + "  ·  DNS: " + root.dnsProvider
+                  textFormat: Text.PlainText
                   color: root.dimFg
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
@@ -1601,6 +1605,7 @@ Panel {
                           anchors.rightMargin: Style.space(8)
                           anchors.verticalCenter: parent.verticalCenter
                           text: modelData.ssid + (modelData.secure ? "  󰌾" : "")
+                          textFormat: Text.PlainText
                           color: root.fg
                           font.family: root.uiFontFamily
                           font.pixelSize: Style.font.bodySmall
@@ -1764,6 +1769,7 @@ Panel {
                         anchors.rightMargin: Style.space(8)
                         anchors.verticalCenter: parent.verticalCenter
                         text: modelData.name
+                        textFormat: Text.PlainText
                         color: root.fg
                         font.family: root.uiFontFamily
                         font.pixelSize: Style.font.bodySmall
@@ -1851,6 +1857,7 @@ Panel {
                       anchors.rightMargin: Style.space(8)
                       anchors.verticalCenter: parent.verticalCenter
                       text: Model.friendlyDeviceLabel(modelData, root.tr("sound.device"))
+                      textFormat: Text.PlainText
                       color: root.fg
                       font.family: root.uiFontFamily
                       font.pixelSize: Style.font.bodySmall
@@ -1946,6 +1953,7 @@ Panel {
                       anchors.right: parent.right
                       anchors.verticalCenter: parent.verticalCenter
                       text: Model.friendlyDeviceLabel(modelData, root.tr("sound.device"))
+                      textFormat: Text.PlainText
                       color: root.fg
                       font.family: root.uiFontFamily
                       font.pixelSize: Style.font.bodySmall
@@ -1988,6 +1996,7 @@ Panel {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
                         text: Model.friendlyDeviceLabel(modelData, root.tr("sound.device"))
+                        textFormat: Text.PlainText
                         color: root.fg
                         font.family: root.uiFontFamily
                         font.pixelSize: Style.font.caption
@@ -2042,6 +2051,7 @@ Panel {
 
                 Text {
                   text: root.tr("display.scale", root.focusedMonitor || root.tr("display.screen"))
+                  textFormat: Text.PlainText
                   color: root.dimFg
                   font.family: root.uiFontFamily
                   font.pixelSize: Style.font.caption
@@ -2283,6 +2293,7 @@ Panel {
         Text {
           width: parent.width
           text: connRow.title
+          textFormat: Text.PlainText
           color: root.fg
           font.family: root.uiFontFamily
           font.pixelSize: Style.font.bodySmall
@@ -2293,6 +2304,7 @@ Panel {
         Text {
           width: parent.width
           text: connRow.subtitle
+          textFormat: Text.PlainText
           color: connRow.active ? root.accent : root.dimFg
           font.family: root.uiFontFamily
           font.pixelSize: Style.font.caption
@@ -2343,6 +2355,7 @@ Panel {
       anchors.rightMargin: Style.space(7)
       horizontalAlignment: Text.AlignHCenter
       text: pillBtn.text
+      textFormat: Text.PlainText
       color: root.dimFg
       font.family: root.uiFontFamily
       font.pixelSize: Style.font.caption
